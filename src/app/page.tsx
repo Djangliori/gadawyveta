@@ -22,10 +22,19 @@ export default function Home() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   // მონაცემების ჩატვირთვა
   useEffect(() => {
+    setMounted(true);
     fetchTasks();
+
+    // Live reload - ყოველ 5 წამში განახლება
+    const interval = setInterval(() => {
+      fetchTasks();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const fetchTasks = async () => {
@@ -133,7 +142,7 @@ export default function Home() {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-semibold text-slate-800">
-                  დავალებები - {new Date(selectedDate).toLocaleDateString('ka-GE')}
+                  დავალებები - {mounted ? new Date(selectedDate).toLocaleDateString('ka-GE') : selectedDate}
                 </h2>
                 <button
                   onClick={handleAddTask}
