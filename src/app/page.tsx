@@ -43,6 +43,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
+        console.log('Loaded tasks:', data); // Debug
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -115,7 +116,10 @@ export default function Home() {
   };
 
   // გაფილტრული დავალებები არჩეული თარიღისთვის
-  const filteredTasks = tasks.filter(task => task.date === selectedDate);
+  const filteredTasks = tasks.filter(task => {
+    const taskDate = new Date(task.date).toISOString().split('T')[0];
+    return taskDate === selectedDate;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
