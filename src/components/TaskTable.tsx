@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Task } from '@/app/page';
 
 interface TaskTableProps {
@@ -9,6 +10,7 @@ interface TaskTableProps {
 }
 
 export default function TaskTable({ tasks, onEdit, onDelete }: TaskTableProps) {
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -26,7 +28,8 @@ export default function TaskTable({ tasks, onEdit, onDelete }: TaskTableProps) {
           {tasks.map((task) => (
             <tr
               key={task.id}
-              className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+              onClick={() => setViewingTask(task)}
+              className="border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               <td className="py-4 px-4 text-slate-600">
                 {new Date(task.date).toLocaleDateString('ka-GE')}
@@ -50,7 +53,10 @@ export default function TaskTable({ tasks, onEdit, onDelete }: TaskTableProps) {
               <td className="py-4 px-4 text-right">
                 <div className="flex justify-end gap-2">
                   <button
-                    onClick={() => onEdit(task)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(task);
+                    }}
                     className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"
                     aria-label="რედაქტირება"
                   >
@@ -59,7 +65,10 @@ export default function TaskTable({ tasks, onEdit, onDelete }: TaskTableProps) {
                     </svg>
                   </button>
                   <button
-                    onClick={() => onDelete(task.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(task.id);
+                    }}
                     className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"
                     aria-label="წაშლა"
                   >
@@ -73,6 +82,102 @@ export default function TaskTable({ tasks, onEdit, onDelete }: TaskTableProps) {
           ))}
         </tbody>
       </table>
+
+      {/* Modal - დავალების დეტალები */}
+      {viewingTask && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={() => setViewingTask(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center sticky top-0 bg-white">
+              <h3 className="text-2xl font-semibold text-slate-800">
+                {viewingTask.name}
+              </h3>
+              <button
+                onClick={() => setViewingTask(null)}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                aria-label="დახურვა"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* თარიღი */}
+              <div>
+                <label className="block text-sm font-medium text-slate-500 mb-2">
+                  თარიღი
+                </label>
+                <div className="text-lg text-slate-800">
+                  {new Date(viewingTask.date).toLocaleDateString('ka-GE', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </div>
+              </div>
+
+              {/* დახარჯული დრო */}
+              <div>
+                <label className="block text-sm font-medium text-slate-500 mb-2">
+                  დახარჯული დრო
+                </label>
+                <div className="inline-flex items-center px-4 py-2 rounded-xl bg-blue-50 text-blue-700 font-semibold text-lg">
+                  {viewingTask.duration}
+                </div>
+              </div>
+
+              {/* კატეგორია */}
+              <div>
+                <label className="block text-sm font-medium text-slate-500 mb-2">
+                  კატეგორია
+                </label>
+                <div className="inline-flex items-center px-4 py-2 rounded-xl bg-purple-50 text-purple-700 font-semibold text-lg">
+                  {viewingTask.category}
+                </div>
+              </div>
+
+              {/* აღწერა */}
+              <div>
+                <label className="block text-sm font-medium text-slate-500 mb-2">
+                  აღწერა
+                </label>
+                <div className="bg-slate-50 rounded-xl p-4 text-slate-800 leading-relaxed whitespace-pre-wrap">
+                  {viewingTask.description || 'აღწერა არ არის'}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setViewingTask(null);
+                  onEdit(viewingTask);
+                }}
+                className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+              >
+                რედაქტირება
+              </button>
+              <button
+                onClick={() => setViewingTask(null)}
+                className="px-6 py-2 border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 font-medium transition-colors"
+              >
+                დახურვა
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
